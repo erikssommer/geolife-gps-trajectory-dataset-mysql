@@ -1,6 +1,7 @@
 from DbConnector import DbConnector
 from tabulate import tabulate
 
+# File is currently not in use
 
 class CreateTables:
 
@@ -64,7 +65,6 @@ class CreateTables:
         rows = self.cursor.fetchall()
         print(tabulate(rows, headers=self.cursor.column_names))
 
-    """
     def insert_data(self, table_name):
         names = ['Bobby', 'Mc', 'McSmack', 'Board']
         for name in names:
@@ -90,7 +90,6 @@ class CreateTables:
         query = "DROP TABLE %s"
         self.cursor.execute(query % table_name) 
     
-    """
 
 
 def main():
