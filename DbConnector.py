@@ -1,27 +1,29 @@
 import mysql.connector as mysql
 import os
+from decouple import config
 
 class DbConnector:
     """
-    Connects to the MySQL server on the Ubuntu virtual machine.
+    Connects to the MySQL server on docker.
     Connector needs HOST, DATABASE, USER and PASSWORD to connect,
     while PORT is optional and should be 3306.
 
     Example:
-    HOST = "tdt4225-00.idi.ntnu.no" // Your server IP address/domain name
+    HOST = "localhost" // Your server IP address/domain name
     DATABASE = "testdb" // Database name, if you just want to connect to MySQL server, leave it empty
     USER = "testuser" // This is the user you created and added privileges for
     PASSWORD = "test123" // The password you set for said user
     """
 
     def __init__(self,
-                 HOST=os.environ["DATABASE_HOST"],
-                 DATABASE=os.environ["DATABASE_NAME"],
-                 USER=os.environ["DATABASE_USER"],
-                 PASSWORD=os.environ["DATABASE_PASSWORD"]):
+                 HOST=config('MYSQL_DATABASE_HOST'),
+                 PORT=config('MYSQL_DATABASE_PORT'),
+                 DATABASE=config('MYSQL_DATABASE'),
+                 USER=config('MYSQL_USER'),
+                 PASSWORD=config('MYSQL_PASSWORD')):
         # Connect to the database
         try:
-            self.db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD, port=3306)
+            self.db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD, port=PORT)
         except Exception as e:
             print("ERROR: Failed to connect to db:", e)
 
