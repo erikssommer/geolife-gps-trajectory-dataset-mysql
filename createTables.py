@@ -96,9 +96,11 @@ def main():
     program = None
     try:
         program = CreateTables()
-        program.create_table(table_name="User")
-        program.create_table(table_name="Activity")
-        program.create_table(table_name="TrackPoint")
+
+        #program.create_table(table_name="User")
+        #program.create_table(table_name="Activity")
+        #program.create_table(table_name="TrackPoint")
+        
         # Check that the table is dropped
         program.show_tables()
     except Exception as e:
