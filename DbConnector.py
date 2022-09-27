@@ -1,5 +1,4 @@
 import mysql.connector as mysql
-import os
 from decouple import config
 
 class DbConnector:
