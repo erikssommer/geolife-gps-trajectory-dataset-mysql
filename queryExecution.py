@@ -33,16 +33,25 @@ class QueryExecution:
     # Query 3
     def top_twenty_users(self):
         query = """
-            SELECT user_id, COUNT(*) AS num_activities 
-            FROM Activity
-            GROUP BY user_id
-            ORDER BY num_activities
-            DESC LIMIT 20
+        SELECT user_id, COUNT(*) AS num_activities 
+        FROM Activity
+        GROUP BY user_id
+        ORDER BY num_activities DESC
+        LIMIT 20
         """
         self.execute_query(query)
 
     # Query 4
-    def query4(self):
+    def users_taken_taxi(self):
+        query = """
+        SELECT DISTINCT user_id
+        FROM Activity
+        WHERE transportation_mode = "taxi"
+        """
+        self.execute_query(query)
+
+    # Query 5
+    def query5(self):
         query = """
             SELECT transportation_mode, COUNT(transportation_mode) as count
             FROM geolife.Activity
@@ -50,8 +59,6 @@ class QueryExecution:
             GROUP BY transportation_mode
         """
         self.execute_query(query)
-
-    # Query 5
     
     # Query 6
     def query6a(self):
@@ -73,6 +80,23 @@ class QueryExecution:
         self.execute_query(query)
 
     # Query 7
+    # TODO: This query is not working
+    def total_distance_in_km_walked_in_2008_by_userid_112(self):
+        query = """
+        SELECT SUM(distance) AS total_distance
+        FROM (
+            SELECT Activity.id, Activity.user_id, Activity.transportation_mode, 
+            (6371 * acos(cos(radians(52.520008)) * cos(radians(TrackPoint.lat)) * 
+            cos(radians(TrackPoint.lon) - radians(13.404954)) + sin(radians(52.520008)) * 
+             sin(radians(TrackPoint.lat)))) AS distance
+             FROM Activity
+             JOIN TrackPoint ON Activity.id = TrackPoint.activity_id
+             WHERE Activity.user_id = 112
+             AND Activity.transportation_mode = "walk"
+             AND YEAR(Activity.start_date_time) = 2008
+         ) AS distance_table
+        """
+        self.execute_query(query)
 
     # Query 8
     def query8(self):
@@ -98,6 +122,5 @@ def main():
     query = QueryExecution()
     query.top_twenty_users()
 
-if __name__ == "__main__":
-    main()
+main()
 
