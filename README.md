@@ -12,6 +12,11 @@ cd docker
 docker-compose up --build -V
 ```
 
+In seperate shell
+```bash
+python3 readingFiles.py
+```
+
 Remember to prune volumes regularly
 ```bash
 docker volume prune

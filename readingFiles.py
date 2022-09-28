@@ -43,22 +43,19 @@ def openAllFiles():
 
     number_of_files = 0
 
-    for _, _, files in os.walk("dataset/Data"):
-        number_of_files += len(files[:6])
+    for root, _, files in os.walk("dataset/Data"):
+        for file_name in files:
+            if file_name.endswith(".plt"):
+                file_path = os.path.join(root, file_name)
+                df = pd.read_csv(file_path, skiprows=1, sep="\t")
+                if len(df.index) <= 2506:
+                    number_of_files += 1
+            else:
+                number_of_files += 1
 
     current_file_index = 0
 
     for root, dirs, files in os.walk("dataset/Data"):
-        current_file_index += 1
-        print("%s Progress %6s %% - %5s / %5s" %
-            (
-                time.strftime("%Y-%m-%d %H:%M"),
-                round(current_file_index / number_of_files * 100, 2),
-                current_file_index,
-                number_of_files
-            )
-        )
-
         for name in dirs:
             if name == "Trajectory":
                 continue
@@ -68,8 +65,18 @@ def openAllFiles():
 
             cursor.execute("INSERT INTO User (id, has_labels) VALUES (%s, %s)", (user_id, id_has_label(user_id)))
         
-        for name in files[:6]: #limit to 2 files per folder for faster testing
-        # for name in files:
+        # for name in files[:6]: #limit to 2 files per folder for faster testing
+        for name in files:
+            current_file_index += 1
+            print("%s Progress %6s %% - %5s / %5s" %
+                (
+                    time.strftime("%Y-%m-%d %H:%M:%S"),
+                    round(current_file_index / number_of_files * 100, 2),
+                    current_file_index,
+                    number_of_files
+                )
+            )
+
             file_path = os.path.join(root, name)
             user_id = root.split("/")[2]
 
@@ -129,7 +136,7 @@ def openAllFiles():
                         end_date_time
                     )
                     cursor.execute("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activity)
-                    print(f"Inserting activity %s with %4s trackpoints" % (activity_id, len(df.index)))
+                    # print(f"Inserting activity %s with %4s trackpoints" % (activity_id, len(df.index)))
 
                     # activities[activity_id] = {
                     #     "user_id": user_id,
@@ -157,7 +164,7 @@ def openAllFiles():
 
                     # cursor.execute("INSERT INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE", trackpoint)
                     cursor.execute("INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", trackpoint)
-                    print(f"Inserting trackpoint {trackpoint_id}")
+                    # print(f"Inserting trackpoint {trackpoint_id}")
                     continue
                     
                     trackpoints[trackpoint_id] = {
@@ -202,7 +209,7 @@ def openAllFiles():
     # db_connection.commit()
     # print(f"\n {time.strftime('%Y-%m-%d %H:%M')} inserted {cursor.rowcount} trackpoints")
 
-start_datetime = time.strftime("%Y-%m-%d %H:%M")
+start_datetime = time.strftime("%Y-%m-%d %H:%M:%S")
 openAllFiles()
-end_datetime = time.strftime("%Y-%m-%d %H:%M")
+end_datetime = time.strftime("%Y-%m-%d %H:%M:%S")
 print(f"Started: {start_datetime}\nFinished: {end_datetime}")
