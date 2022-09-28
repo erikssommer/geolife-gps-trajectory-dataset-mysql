@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-import itertools
+import time
 
 from DbConnector import DbConnector
 
@@ -38,21 +38,39 @@ def openAllFiles():
     cursor = connection.cursor
 
     users = dict()
-    activities = dict()
+    activities = set()
     trackpoints = dict()
 
+    number_of_files = 0
+
+    for _, _, files in os.walk("dataset/Data"):
+        number_of_files += len(files[:6])
+
+    current_file_index = 0
+
     for root, dirs, files in os.walk("dataset/Data"):
+        current_file_index += 1
+        print("%s Progress %6s %% - %5s / %5s" %
+            (
+                time.strftime("%Y-%m-%d %H:%M"),
+                round(current_file_index / number_of_files * 100, 2),
+                current_file_index,
+                number_of_files
+            )
+        )
+
         for name in dirs:
-            user_id = name
-            if user_id == "Trajectory":
+            if name == "Trajectory":
                 continue
 
-            users[user_id] = id_has_label(user_id)
+            user_id = name
+            # users[user_id] = id_has_label(user_id)
 
-        for name in files[:2]: #limit to 2 files per folder for testing
+            cursor.execute("INSERT INTO User (id, has_labels) VALUES (%s, %s)", (user_id, id_has_label(user_id)))
+        
+        for name in files[:6]: #limit to 2 files per folder for faster testing
         # for name in files:
             file_path = os.path.join(root, name)
-            print("processing file:", file_path)
             user_id = root.split("/")[2]
 
             # if we are reading labels file
@@ -62,23 +80,40 @@ def openAllFiles():
                 for _, row in df.iterrows():
                     stripped_start_date = row["start_date_time"].split(" ")[0].replace("/", "")
                     stripped_start_time = row["start_date_time"].split(" ")[1].replace(":", "")
-                    # activity_id = user_id + "_" + stripped_start_date + stripped_start_time
-                    activity_id = stripped_start_date + stripped_start_time
+                    
+                    stripped_end_date = row["end_date_time"].split(" ")[0].replace("/", "")
+                    stripped_end_time = row["end_date_time"].split(" ")[1].replace(":", "")
+
+                    activity_id = user_id + "_" + stripped_start_date + stripped_start_time + "_" + stripped_end_date + stripped_end_time + "_" + row["transportation_mode"]
+                    # activity_id = stripped_start_date + stripped_start_time
                     
                     formatted_start_date = row["start_date_time"].replace("/", "-")
                     formatted_end_date = row["end_date_time"].replace("/", "-")
 
-                    activities[activity_id] = {
-                        "user_id": user_id,
-                        "transportation_mode": row["transportation_mode"],
-                        "start_date_time": formatted_start_date,
-                        "end_date_time": formatted_end_date
-                    }
+                    activity = (
+                        activity_id,
+                        user_id,
+                        row["transportation_mode"],
+                        formatted_start_date,
+                        formatted_end_date
+                    )
+                    activities.add(activity_id)
+                    cursor.execute("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activity)
+                    continue
 
-            # if we are reading plot file
+                    # activities[activity_id] = {
+                    #     "user_id": user_id,
+                    #     "transportation_mode": row["transportation_mode"],
+                    #     "start_date_time": formatted_start_date,
+                    #     "end_date_time": formatted_end_date
+                    # }
+
+                db_connection.commit()
+
+            # else we are reading plot file
             else:
-                # activity_id = user_id + "_" + name.split(".")[0]
-                activity_id = name.split(".")[0]
+                activity_id = user_id + "_" + name.split(".")[0]
+                # activity_id = name.split(".")[0]
                 df = read_plot_file(file_path)
 
                 # if the activity does not exist we need to create it
@@ -86,20 +121,45 @@ def openAllFiles():
                     start_date_time = df.iloc[0]["date"] + " " + df.iloc[0]["date_time"]
                     end_date_time = df.iloc[-1]["date"] + " " + df.iloc[-1]["date_time"]
 
-                    activities[activity_id] = {
-                        "user_id": user_id,
-                        "transportation_mode": "",
-                        "start_date_time": start_date_time,
-                        "end_date_time": end_date_time
-                    }
+                    activity = (
+                        activity_id,
+                        user_id,
+                        "",
+                        start_date_time,
+                        end_date_time
+                    )
+                    cursor.execute("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activity)
+                    print(f"Inserting activity %s with %4s trackpoints" % (activity_id, len(df.index)))
+
+                    # activities[activity_id] = {
+                    #     "user_id": user_id,
+                    #     "transportation_mode": "",
+                    #     "start_date_time": start_date_time,
+                    #     "end_date_time": end_date_time
+                    # }
                 
                 for _, row in df.iterrows():
                     stripped_start_date = row["date"].replace("/", "")
                     stripped_start_time = row["date_time"].replace(":", "")
 
-                    # trackpoint_id = activity_id + "_" + stripped_start_date + stripped_start_time
-                    trackpoint_id = stripped_start_date + stripped_start_time
+                    trackpoint_id = activity_id + "_" + stripped_start_date + stripped_start_time
+                    # trackpoint_id = stripped_start_date + stripped_start_time
 
+                    trackpoint = (
+                        trackpoint_id,
+                        activity_id,
+                        row["lat"],
+                        row["long"],
+                        row["altitude"],
+                        row["date"].replace("-", ""),
+                        row["date"] + " " + row["date_time"]
+                    )
+
+                    # cursor.execute("INSERT INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE", trackpoint)
+                    cursor.execute("INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", trackpoint)
+                    print(f"Inserting trackpoint {trackpoint_id}")
+                    continue
+                    
                     trackpoints[trackpoint_id] = {
                         "activity_id": activity_id,
                         "lat": row["lat"],
@@ -109,34 +169,40 @@ def openAllFiles():
                         "date_time": row["date"] + " " + row["date_time"]
                     }
 
+        db_connection.commit()
 
-    print("\nusers")
-    print(list(users.items())[:5])
-
-    # prepare data for insertion, flatten the dictionaries into lists
-    activities_list = [(k, *v.values()) for k, v in activities.items()]
-    print("\nactivities_list")
-    print(activities_list[:5])
-
-    trackpoints_list = [(k, *v.values()) for k, v in trackpoints.items()]
-    print("\ntrackpoints_list")
-    print(trackpoints_list[:5])
-
-    print("\ninserting users...")
-
-    # insert data into database
-    cursor.executemany("INSERT INTO User (id, has_labels) VALUES (%s, %s)", list(users.items()))
     db_connection.commit()
-    print("inserted %s users" % cursor.rowcount)
 
-    print("\ninserting activities...")
-    cursor.executemany("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activities_list)
-    db_connection.commit()
-    print("inserted %s activities" % cursor.rowcount)
+    # print("\nusers")
+    # print(list(users.items())[:5])
 
-    print("\ninserting trackpoints...")
-    cursor.executemany("INSERT INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", trackpoints_list)
-    db_connection.commit()
-    print("inserted %s trackpoints" % cursor.rowcount)
+    # # prepare data for insertion, flatten the dictionaries into lists
+    # activities_list = [(k, *v.values()) for k, v in activities.items()]
+    # print("\nactivities_list")
+    # print(activities_list[:5])
 
+    # trackpoints_list = [(k, *v.values()) for k, v in trackpoints.items()]
+    # print("\ntrackpoints_list")
+    # print(trackpoints_list[:5])
+
+    # # insert data into database
+
+    # print(f"\n {time.strftime('%Y-%m-%d %H:%M')} inserting {len(users)} users...")
+    # cursor.executemany("INSERT INTO User (id, has_labels) VALUES (%s, %s)", list(users.items()))
+    # db_connection.commit()
+    # print(f"\n {time.strftime('%Y-%m-%d %H:%M')} inserted {cursor.rowcount} users")
+
+    # print(f"\n {time.strftime('%Y-%m-%d %H:%M')} inserting {len(activities_list)} activities...")
+    # cursor.executemany("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activities_list)
+    # db_connection.commit()
+    # print(f"\n {time.strftime('%Y-%m-%d %H:%M')} inserted {cursor.rowcount} activities")
+
+    # print(f"\n {time.strftime('%Y-%m-%d %H:%M')} inserting {len(trackpoints_list)} trackpoints...")
+    # cursor.executemany("INSERT INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", trackpoints_list)
+    # db_connection.commit()
+    # print(f"\n {time.strftime('%Y-%m-%d %H:%M')} inserted {cursor.rowcount} trackpoints")
+
+start_datetime = time.strftime("%Y-%m-%d %H:%M")
 openAllFiles()
+end_datetime = time.strftime("%Y-%m-%d %H:%M")
+print(f"Started: {start_datetime}\nFinished: {end_datetime}")
