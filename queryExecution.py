@@ -75,6 +75,16 @@ class QueryExecution:
     # Query 7
 
     # Query 8
+    def query8(self):
+        query = """
+            SELECT Activity.user_id, SUM(TrackPoint.altitude) as "total meters gained per user"
+            FROM TrackPoint
+            JOIN Activity ON TrackPoint.activity_id = Activity.id
+            GROUP BY Activity.user_id
+            ORDER BY SUM(TrackPoint.altitude) DESC
+            LIMIT 20
+        """
+        self.execute_query(query)
 
     # Query 9
 
