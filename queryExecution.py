@@ -124,7 +124,18 @@ class QueryExecution:
         """
         self.execute_query(query)
 
-    # Query 11
+    # Query 11 # TODO ikke helt ferdig
+    def query10(self):
+        query = """
+            SELECT user_id, COUNT(TrackPoint.id) as 'trackpoints in forbidden city'
+            FROM TrackPoint
+            JOIN Activity ON TrackPoint.activity_id = Activity.id
+            WHERE lat >= 39.916 AND lat < 39.917
+            AND lon >= 116.397 AND lon < 116.398
+            GROUP BY Activity.user_id
+        """
+        self.execute_query(query)
+    
 
 def main():
     query = QueryExecution()
