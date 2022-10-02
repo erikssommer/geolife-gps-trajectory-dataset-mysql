@@ -91,7 +91,7 @@ def openAllFiles():
                     stripped_end_date = row["end_date_time"].split(" ")[0].replace("/", "")
                     stripped_end_time = row["end_date_time"].split(" ")[1].replace(":", "")
 
-                    activity_id = user_id + "_" + stripped_start_date + stripped_start_time + "_" + stripped_end_date + stripped_end_time + "_" + row["transportation_mode"]
+                    activity_id = user_id + "_" + stripped_start_date + stripped_start_time + "_" + stripped_end_date + stripped_end_time #+ "_" + row["transportation_mode"]
                     # activity_id = stripped_start_date + stripped_start_time
                     
                     formatted_start_date = row["start_date_time"].replace("/", "-")
@@ -157,7 +157,7 @@ def openAllFiles():
                         activity_id,
                         row["lat"],
                         row["long"],
-                        row["altitude"],
+                        None if row["altitude"] == -777 else row["altitude"],
                         row["date"].replace("-", ""),
                         row["date"] + " " + row["date_time"]
                     )
