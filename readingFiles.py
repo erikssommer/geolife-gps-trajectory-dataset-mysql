@@ -43,7 +43,14 @@ def openAllFiles():
 
     number_of_files = 0
 
-    for root, _, files in os.walk("dataset/Data"):
+    # count all files for progress tracking
+    for root, dirs, files in os.walk("dataset/Data"):
+        for file_name in dirs:
+            if file_name == "Trajectory":
+                continue
+
+            number_of_files += 1
+
         for file_name in files:
             if file_name.endswith(".plt"):
                 file_path = os.path.join(root, file_name)
@@ -54,6 +61,7 @@ def openAllFiles():
                 number_of_files += 1
 
     current_file_index = 0
+
 
     for root, dirs, files in os.walk("dataset/Data"):
         for name in dirs:
@@ -91,7 +99,7 @@ def openAllFiles():
                     stripped_end_date = row["end_date_time"].split(" ")[0].replace("/", "")
                     stripped_end_time = row["end_date_time"].split(" ")[1].replace(":", "")
 
-                    activity_id = user_id + "_" + stripped_start_date + stripped_start_time + "_" + stripped_end_date + stripped_end_time #+ "_" + row["transportation_mode"]
+                    activity_id = user_id + "_" + stripped_start_date + stripped_start_time #+ "_" + stripped_end_date + stripped_end_time + "_" + row["transportation_mode"]
                     # activity_id = stripped_start_date + stripped_start_time
                     
                     formatted_start_date = row["start_date_time"].replace("/", "-")
@@ -105,7 +113,7 @@ def openAllFiles():
                         formatted_end_date
                     )
                     activities.add(activity_id)
-                    cursor.execute("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activity)
+                    cursor.execute(f"INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE transportation_mode='{row['transportation_mode']}'", activity)
                     continue
 
                     # activities[activity_id] = {
@@ -162,7 +170,6 @@ def openAllFiles():
                         row["date"] + " " + row["date_time"]
                     )
 
-                    # cursor.execute("INSERT INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE", trackpoint)
                     cursor.execute("INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", trackpoint)
                     # print(f"Inserting trackpoint {trackpoint_id}")
                     continue
