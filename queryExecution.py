@@ -1,4 +1,4 @@
-import DbConnector
+from DbConnector import DbConnector
 
 class QueryExecution:
     def __init__(self):
@@ -12,11 +12,15 @@ class QueryExecution:
 
     # Query 1
     def query1(self):
-        return [
-            self.execute_query("SELECT COUNT(*) FROM geolife.`User`"),
-            self.execute_query("SELECT COUNT(*) FROM geolife.Activity"),
-            self.execute_query("SELECT COUNT(*) FROM geolife.TrackPoint")
-        ]
+        # How many users, activities and trackpoints are there in the dataset
+        query = """
+            SELECT 
+            (SELECT COUNT(id) FROM User) AS user_sum,
+            (SELECT COUNT(id) FROM Activity) AS activity_sum,
+            (SELECT COUNT(id) FROM TrackPoint) AS trackpoint_sum
+        """
+        res = self.execute_query(query)
+        print(res)
 
     # Query 2
     def query2(self):
@@ -28,7 +32,8 @@ class QueryExecution:
                 GROUP BY user_id
             ) AS user_activity_count
         """
-        self.execute_query(query)
+        res = self.execute_query(query)
+        print(res)
 
     # Query 3
     def top_twenty_users(self):
@@ -39,7 +44,8 @@ class QueryExecution:
         ORDER BY num_activities DESC
         LIMIT 20
         """
-        self.execute_query(query)
+        res = self.execute_query(query)
+        print(res[0])
 
     # Query 4
     def users_taken_taxi(self):
@@ -96,7 +102,8 @@ class QueryExecution:
              AND YEAR(Activity.start_date_time) = 2008
          ) AS distance_table
         """
-        self.execute_query(query)
+        res = self.execute_query(query)
+        print(res)
 
     # Query 8
     def query8(self):
@@ -156,7 +163,10 @@ class QueryExecution:
 
 def main():
     query = QueryExecution()
+    query.query1()
+    query.query2()
     query.top_twenty_users()
+    query.total_distance_in_km_walked_in_2008_by_userid_112()
 
 main()
 
