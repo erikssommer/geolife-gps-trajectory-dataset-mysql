@@ -17,6 +17,7 @@ def main():
     print("\n-------- Query 7 ----------")
     query.total_distance_in_km_walked_in_2008_by_userid_112()
     print("\n-------- Query 8 ----------")
+    print("This one takes a while...")
     query.top_20_users_gained_most_altitude_meters()
     print("\n-------- Query 9 ----------")
     print("This one takes a while...")

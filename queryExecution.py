@@ -147,18 +147,46 @@ class QueryExecution:
     # Query 8 - Find the top 20 users who have gained the most altitude meters.
     def top_20_users_gained_most_altitude_meters(self):
         query = """
-            SELECT Activity.user_id, SUM(TrackPoint.altitude) as "total meters gained per user"
+            SELECT 
+                user_id,
+                activity_id,
+                TrackPoint.altitude
             FROM TrackPoint
             JOIN Activity ON TrackPoint.activity_id = Activity.id
-            GROUP BY Activity.user_id
-            ORDER BY SUM(TrackPoint.altitude) DESC
-            LIMIT 20
         """
-        res = self.execute_query(query)
 
-        print("nr. user_id meters_gained")
-        for i, row in enumerate(res):
-            print("{:3} {:>7} {:>13,}".format(i + 1, row[0], row[1]))
+        trackpoint_altitudes = self.execute_query(query)
+        user_altitude = dict()
+        
+        for index in range(len(trackpoint_altitudes)):
+            if index == len(trackpoint_altitudes) - 1:
+                break
+            user_id = trackpoint_altitudes[index][0]
+            activity_id = trackpoint_altitudes[index][1]
+
+            next_activity_id = trackpoint_altitudes[index + 1][1]
+
+            # We can only calculate the altitude gain if we have two trackpoints from the same activity
+            if activity_id != next_activity_id:
+                continue
+
+            # Initialize the user_altitude dict if the user_id is not in it
+            if user_id not in user_altitude:
+                user_altitude[user_id] = 0
+
+            altitude = trackpoint_altitudes[index][2]
+            next_altitude = trackpoint_altitudes[index + 1][2]
+        
+            # If one of the altitudes are null they were -777 before cleanup and are invalid
+            if not altitude or not next_altitude:
+                continue
+                
+            altitude_diff = next_altitude - altitude
+            user_altitude[user_id] += altitude_diff
+
+        print("user_id altitude")
+        for user_id, altitude in user_altitude.items():
+            print("{} {:>12}".format(user_id, altitude))
 
     # Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
     def invalid_activities_per_user(self):
