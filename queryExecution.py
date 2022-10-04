@@ -1,3 +1,5 @@
+from dis import dis
+from turtle import distance
 from DbConnector import DbConnector
 from haversine import haversine
 
@@ -132,16 +134,15 @@ class QueryExecution:
             )
         """
 
-        coordinates = self.execute_query(query)
-        total_distance = 0
-        for index in range(len(coordinates)):
-            if index == len(coordinates)-1:
+        res = self.execute_query(query)
+        distance = 0
+        for i in range(len(res)):
+            if i == len(res)-1:
                 break
 
-            distance = haversine(coordinates[index], coordinates[index+1])
-            total_distance += distance
+            distance += haversine(res[i], res[i+1])
             
-        print("The total distance walked in 2008 by user 112 is {} km".format(total_distance))
+        print("The total distance walked in 2008 by user 112 is {:.2f} km".format(distance))
 
     # Query 8 - Find the top 20 users who have gained the most altitude meters.
     def top_20_users_gained_most_altitude_meters(self):
