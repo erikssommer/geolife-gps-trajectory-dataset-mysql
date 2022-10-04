@@ -155,7 +155,7 @@ class QueryExecution:
 
         print("nr. user_id meters_gained")
         for i, row in enumerate(res):
-            print("{:3} {:>8} {:>13,}".format(i, row[0], row[1]))
+            print("{:3} {:>7} {:>13,}".format(i + 1, row[0], row[1]))
 
     # Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
     def invalid_activities_per_user(self):
