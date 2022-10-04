@@ -138,16 +138,17 @@ def openAllFiles():
     print(f"\n{time.strftime('%H:%M:%S')} inserted {cursor.rowcount} activities")
 
     counter = 0
-    for i in range(0, int(len(trackpoints_list) / 1000)):
-        counter += 1000
+    increment = 1000
+    for i in range(0, int(len(trackpoints_list) / increment)):
+        counter += increment
         print("{} Inserting trackpoints {:7.2f} % {:7,} / {:7,}".format(
                 time.strftime("%H:%M:%S"),
-                round(i / (len(trackpoints_list) / 1000) * 100, 2),
+                round(i / (len(trackpoints_list) / increment) * 100, 2),
                 i,
                 len(trackpoints_list)
             )
         )
-        trackpoints_string = str(trackpoints_list[i:i + 1000]).strip("[]")
+        trackpoints_string = str(trackpoints_list[i:i + increment]).strip("[]")
         cursor.execute(f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
         db_connection.commit()
 
@@ -159,7 +160,7 @@ def openAllFiles():
             len(trackpoints_list)
         )
     )
-    trackpoints_string = str(trackpoints_list[:len(trackpoints_list) % 1000]).strip("[]")
+    trackpoints_string = str(trackpoints_list[:len(trackpoints_list) % increment]).strip("[]")
     cursor.execute(f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
     db_connection.commit()
 
