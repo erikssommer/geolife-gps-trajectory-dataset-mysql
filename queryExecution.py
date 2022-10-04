@@ -1,3 +1,4 @@
+from itertools import count
 from DbConnector import DbConnector
 
 class QueryExecution:
@@ -183,20 +184,38 @@ class QueryExecution:
     # TODO ikke helt ferdig, mangler labels
     def users_registered_transportation_mode_and_their_most_used_transportation_mode(self):
         query = """
-            WITH user_transportation_mode_count AS (
-                SELECT user_id, transportation_mode, COUNT(Activity.id) as count
-                FROM Activity
-                JOIN User ON Activity.user_id = `User`.id
-                WHERE transportation_mode != ""
-                GROUP BY user_id, transportation_mode
-            )
-            SELECT user_id, MAX(count) as count
-            FROM user_transportation_mode_count
-            GROUP BY user_id
+            SELECT user_id, transportation_mode, COUNT(Activity.id) as count
+            FROM Activity
+            JOIN User ON Activity.user_id = `User`.id
+            WHERE transportation_mode != ""
+            GROUP BY user_id, transportation_mode
         """
         res = self.execute_query(query)
+        if len(res) == 0:
+            print("No users have registered transportation mode")
+        
+        user_list = []
+        current_user_id = res[0][0]
+        current_user_transportation_mode = res[0][1]
+        current_user_count = 0
+
         for row in res:
-            print("User {} has {} trackpoints in the forbidden city".format(row[0], row[1]))
+            user_id = row[0]
+            if user_id == current_user_id:
+                count = row[2]
+                if count > current_user_count:
+                    current_user_count = count
+                    transportation_mode = row[1]
+                    current_user_transportation_mode = transportation_mode
+            else:
+                user_list.append((current_user_id, current_user_transportation_mode, current_user_count))
+                current_user_id = row[0]
+                current_user_count = 0
+                current_user_transportation_mode = None
+
+        for user in user_list:
+            print("User {} has registered transportation mode, and their most used transportation mode is {} and is registered {} times".format(user[0], user[1], user[2]))        
+
     
 
 def main():
@@ -211,6 +230,7 @@ def main():
     query.top_20_users_gained_most_altitude_meters()
     query.invalid_activities_per_user()
     query.users_tracked_activity_in_the_forbidden_city_beijing()
+    query.users_registered_transportation_mode_and_their_most_used_transportation_mode()
 
 main()
 
