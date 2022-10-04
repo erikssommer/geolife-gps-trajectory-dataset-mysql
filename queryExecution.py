@@ -23,8 +23,8 @@ class QueryExecution:
         user_sum = res[0][0]
         activity_sum = res[0][1]
         trackpoint_sum = res[0][2]
-        print("There are {} users, {} activities and {} trackpoints in the dataset".format(
-            user_sum, activity_sum, trackpoint_sum))
+        print("There are {} users, {:,} activities and {:,} trackpoints in the dataset".format(
+            user_sum, activity_sum, trackpoint_sum).replace(",", " "))
 
     # Query 2 - Find the average number of activities per user.
     def average_number_of_activities_per_user(self):
@@ -38,7 +38,7 @@ class QueryExecution:
         """
         res = self.execute_query(query)
         average = res[0][0]
-        print("The average number of activities per user is {}".format(average))
+        print("The average number of activities per user is {:.2f}".format(average))
 
     # Query 3 - Find the top 20 users with the highest number of activities.
     def top_twenty_users(self):
@@ -51,8 +51,10 @@ class QueryExecution:
         """
         res = self.execute_query(query)
 
-        for user in res:
-            print("User {} has {} activities".format(user[0], user[1]))
+        
+        print("nr. user_id activities")
+        for i, user in enumerate(res):
+            print("{:2} {:>8} {:>10}".format(i + 1, user[0], user[1]))
 
     # Query 4 - Find all users who have taken a taxi.
     def users_taken_taxi(self):
@@ -63,8 +65,7 @@ class QueryExecution:
         """
         res = self.execute_query(query)
 
-        for user in res:
-            print("User {} has taken a taxi".format(user[0]))
+        print("Users who have taken a taxi: " + ", ".join([x[0] for x in res]))
 
     # Query 5 - Find all types of transportation modes and count how many activities that are tagged with these transportation mode labels. Do not count the rows where the mode is null.
     def activity_transport_mode_count(self):
@@ -73,11 +74,13 @@ class QueryExecution:
             FROM geolife.Activity
             WHERE transportation_mode != ""
             GROUP BY transportation_mode
+            ORDER BY transportation_mode
         """
         res = self.execute_query(query)
+
+        print("mode        count")
         for row in res:
-            print("There are {} activities tagged with {}".format(
-                row[1], row[0]))
+            print("{:11} {:>5}".format(row[0], row[1]))
 
     # Query 6
     def year_with_most_activities(self):
@@ -89,37 +92,44 @@ class QueryExecution:
             LIMIT 1
         """
         res6a = self.execute_query(query6a)
-        for row in res6a:
-            print("The year {} has the most activities with {} activities".format(
-                row[0], row[1]))
+        print("The year {} has the most activities with {:,} activities".format(
+            res6a[0][0], res6a[0][1]).replace(",", " "))
 
         # Query 6b - Is this also the year with most recorded hours?
         query6b = """
-            SELECT YEAR(start_date_time) AS year, SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(end_date_time, start_date_time)))) AS duration
+            SELECT
+                YEAR(start_date_time) AS year,
+                ROUND(SUM(TIME_TO_SEC(TIMEDIFF(end_date_time, start_date_time))) / 60 / 60) AS duration
             FROM Activity
             GROUP BY year
-            LIMIT 1
+            LIMIT 5
         """
         res6b = self.execute_query(query6b)
+        print("The year {} has the most recorded hours with {:,} hours".format(
+            res6b[0][0], res6b[0][1]).replace(",", " "))
+
+        print("\nyear   hours")
         for row in res6b:
-            print("The year {} has the most recorded hours with {} hours".format(
-                row[0], row[1]))
+            print("{}  {:>6,}".format(row[0], row[1]).replace(",", " "))
 
         if res6b[0][0] == res6a[0][0]:
-            print("Yes, this is also the year with most recorded hours!")
+            print("\nYes, this is also the year with most recorded hours!")
         else:
-            print("No, this is not the year with most recorded hours")
+            print("\nNo, this is not the year with most recorded hours")
 
     # Query 7 - Find the total distance (in km) walked in 2008, by user with id = 112
 
     def total_distance_in_km_walked_in_2008_by_userid_112(self):
         query = """
-            SELECT SUM(distance) AS total_distance
+            SELECT SUM(distance) / 1000 AS total_distance_in_km
             FROM (
-                SELECT Activity.id, Activity.user_id, Activity.transportation_mode, 
-                (6371 * acos(cos(radians(52.520008)) * cos(radians(TrackPoint.lat)) * 
-                cos(radians(TrackPoint.lon) - radians(13.404954)) + sin(radians(52.520008)) * 
-                sin(radians(TrackPoint.lat)))) AS distance
+                SELECT
+                    Activity.id,
+                    Activity.user_id,
+                    Activity.transportation_mode, 
+                    (6371 * acos(cos(radians(52.520008)) * cos(radians(TrackPoint.lat)) * 
+                    cos(radians(TrackPoint.lon) - radians(13.404954)) + sin(radians(52.520008)) * 
+                    sin(radians(TrackPoint.lat)))) AS distance
                 FROM Activity
                 JOIN TrackPoint ON Activity.id = TrackPoint.activity_id
                 WHERE Activity.user_id = 112
@@ -129,7 +139,7 @@ class QueryExecution:
         """
         res = self.execute_query(query)
         print(
-            "The total distance walked in 2008 by user 112 is {} km".format(res[0][0]))
+            "The total distance walked in 2008 by user 112 is {:,} km".format(res[0][0]).replace(",", " "))
 
     # Query 8 - Find the top 20 users who have gained the most altitude meters.
     def top_20_users_gained_most_altitude_meters(self):
@@ -142,33 +152,33 @@ class QueryExecution:
             LIMIT 20
         """
         res = self.execute_query(query)
-        count = 0
-        for row in res:
-            count += 1
-            print("{}: User {} has gained {} meters".format(
-                count, row[0], row[1]))
+
+        print("nr. user_id meters_gained")
+        for i, row in enumerate(res):
+            print("{:2} {:>8} {:>12,}".format(i, row[0], row[1]).replace(",", " "))
 
     # Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
     def invalid_activities_per_user(self):
         query = """
             SELECT user_id, COUNT(DISTINCT activity_id) AS fault_activity_amount
-                FROM(
-                    SELECT MINUTE(TIMEDIFF(startTime, prev_time)) AS time_diff, user_id, activity_id, prev_a_id
-                        FROM(
+            FROM(
+                SELECT MINUTE(TIMEDIFF(startTime, prev_time)) AS time_diff, user_id, activity_id, prev_a_id
+                    FROM(
                         SELECT t1.date_time AS startTime, LAG(t1.date_time) OVER(ORDER BY date_time) AS prev_time, user_id, activity_id, LAG(t1.activity_id) OVER(ORDER BY date_time) AS prev_a_id
                         FROM TrackPoint t1
                         INNER JOIN Activity ON Activity.id = t1.activity_id
-                        ) AS time_table
-                    ) AS diff_table
-                WHERE time_diff > 5
-                AND activity_id = prev_a_id
-                GROUP BY user_id
-                ORDER BY user_id ASC
+                    ) AS time_table
+                ) AS diff_table
+            WHERE time_diff > 5
+            AND activity_id = prev_a_id
+            GROUP BY user_id
+            ORDER BY user_id ASC
         """
 
         res = self.execute_query(query)
+        print("user_id  invalid_activities")
         for row in res:
-            print("User {} has {} invalid activities".format(row[0], row[1]))
+            print("{}     {:>18}".format(row[0], row[1]))
 
     # Query 10 - Find the users who have tracked an activity in the Forbidden City of Beijing.
 
@@ -189,36 +199,26 @@ class QueryExecution:
     # Query 11 - Find all users who have registered transportation_mode and their most used transportation_mode
     def users_registered_transportation_mode_and_their_most_used_transportation_mode(self):
         query = """
-            SELECT user_id, transportation_mode, COUNT(Activity.id) as count
-            FROM Activity
-            JOIN User ON Activity.user_id = `User`.id
-            WHERE transportation_mode != ""
-            GROUP BY user_id, transportation_mode
+            WITH top_modes_per_user as (
+                SELECT user_id, transportation_mode, COUNT(Activity.id) as count
+                FROM Activity
+                JOIN User ON Activity.user_id = `User`.id
+                WHERE transportation_mode != ""
+                GROUP BY user_id, transportation_mode
+            )
+            SELECT tm.*
+            FROM top_modes_per_user tm
+            INNER JOIN
+                (SELECT user_id, MAX(count) AS max_count
+                FROM top_modes_per_user
+                GROUP BY user_id) groupedtm 
+            ON tm.user_id = groupedtm.user_id 
+            AND tm.count = groupedtm.max_count
         """
         res = self.execute_query(query)
         if len(res) == 0:
             print("No users have registered transportation mode")
 
-        user_list = []
-        current_user_id = res[0][0]
-        current_user_transportation_mode = res[0][1]
-        current_user_count = 0
-
-        for row in res:
-            user_id = row[0]
-            if user_id == current_user_id:
-                count = row[2]
-                if count > current_user_count:
-                    current_user_count = count
-                    transportation_mode = row[1]
-                    current_user_transportation_mode = transportation_mode
-            else:
-                user_list.append(
-                    (current_user_id, current_user_transportation_mode, current_user_count))
-                current_user_id = row[0]
-                current_user_count = 0
-                current_user_transportation_mode = row[1]
-
         print("user_id transportation_mode count")
-        for user in user_list:
+        for user in res:
             print("{:7} {:18} {:6}".format(user[0], user[1], user[2]))

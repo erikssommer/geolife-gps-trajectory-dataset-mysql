@@ -18,7 +18,7 @@ def read_plot_file(path):
         df = pd.read_csv(f, skiprows=6, names=colnames)
         df = df.drop(columns=['_0', '_1'])
 
-        if len(df.index) > 2506:
+        if len(df.index) > 2500:
             # Empty dataframe
             return pd.DataFrame()
 
@@ -118,7 +118,7 @@ def openAllFiles():
                         "activity_id": activity_id,
                         "lat": row["lat"],
                         "lon": row["long"],
-                        "altitude": row["altitude"],
+                        "altitude": None if row["altitude"] == -777 else row["altitude"],
                         "date_days": row["date"].replace("-", ""),
                         "date_time": row["date"] + " " + row["date_time"]
                     }
@@ -128,11 +128,12 @@ def openAllFiles():
     trackpoints_list = [(k, *v.values()) for k, v in trackpoints.items()]
 
     # insert data into database
-
+    print(f"\n{time.strftime('%H:%M:%S')} inserting {cursor.rowcount} users...")
     cursor.executemany("INSERT INTO User (id, has_labels) VALUES (%s, %s)", list(users.items()))
     db_connection.commit()
     print(f"\n{time.strftime('%H:%M:%S')} inserted {cursor.rowcount} users")
 
+    print(f"\n{time.strftime('%H:%M:%S')} inserting {cursor.rowcount} activities...")
     cursor.executemany("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activities_list)
     db_connection.commit()
     print(f"\n{time.strftime('%H:%M:%S')} inserted {cursor.rowcount} activities")
