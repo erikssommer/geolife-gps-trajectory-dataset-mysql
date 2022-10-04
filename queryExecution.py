@@ -180,9 +180,23 @@ class QueryExecution:
             print("User {} has {} trackpoints in the forbidden city".format(row[0], row[1]))
 
     # Query 11 - Find all users who have registered transportation_mode and their most used transportation_mode
-    # TODO ikke helt ferdig
+    # TODO ikke helt ferdig, mangler labels
     def users_registered_transportation_mode_and_their_most_used_transportation_mode(self):
-        pass
+        query = """
+            WITH user_transportation_mode_count AS (
+                SELECT user_id, transportation_mode, COUNT(Activity.id) as count
+                FROM Activity
+                JOIN User ON Activity.user_id = `User`.id
+                WHERE transportation_mode != ""
+                GROUP BY user_id, transportation_mode
+            )
+            SELECT user_id, MAX(count) as count
+            FROM user_transportation_mode_count
+            GROUP BY user_id
+        """
+        res = self.execute_query(query)
+        for row in res:
+            print("User {} has {} trackpoints in the forbidden city".format(row[0], row[1]))
     
 
 def main():
