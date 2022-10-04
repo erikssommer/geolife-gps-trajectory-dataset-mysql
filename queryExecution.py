@@ -112,17 +112,18 @@ class QueryExecution:
 
     # Query 9
 
-        query = """ 
-            SELECT user_id, COUNT(DISTINCT activity_id)
+        query = """
+        SELECT user_id, COUNT(DISTINCT activity_id) AS fault_activity_amount
             FROM(
-                SELECT MINUTE(TIMEDIFF(startTime, prev_time)) AS time_diff, user_id, activity_id
+                SELECT MINUTE(TIMEDIFF(startTime, prev_time)) AS time_diff, user_id, activity_id, prev_a_id
                     FROM(
-                    SELECT t1.date_time AS startTime, LAG(t1.date_time) OVER(ORDER BY date_time) AS prev_time, user_id, activity_id
+                    SELECT t1.date_time AS startTime, LAG(t1.date_time) OVER(ORDER BY date_time) AS prev_time, user_id, activity_id, LAG(t1.activity_id) OVER(ORDER BY date_time) AS prev_a_id
                     FROM TrackPoint t1
                     INNER JOIN Activity ON Activity.id = t1.activity_id
                     ) AS time_table
                 ) AS diff_table
             WHERE time_diff > 5
+            AND activity_id = prev_a_id
             GROUP BY user_id
             ORDER BY user_id ASC"""
 
