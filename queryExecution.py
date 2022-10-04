@@ -1,5 +1,5 @@
 from DbConnector import DbConnector
-
+from haversine import haversine
 
 class QueryExecution:
     def __init__(self):
@@ -111,25 +111,29 @@ class QueryExecution:
             print("No, this is not the year with most recorded hours")
 
     # Query 7 - Find the total distance (in km) walked in 2008, by user with id = 112
-
     def total_distance_in_km_walked_in_2008_by_userid_112(self):
         query = """
-            SELECT SUM(distance) AS total_distance
-            FROM (
-                SELECT Activity.id, Activity.user_id, Activity.transportation_mode, 
-                (6371 * acos(cos(radians(52.520008)) * cos(radians(TrackPoint.lat)) * 
-                cos(radians(TrackPoint.lon) - radians(13.404954)) + sin(radians(52.520008)) * 
-                sin(radians(TrackPoint.lat)))) AS distance
-                FROM Activity
-                JOIN TrackPoint ON Activity.id = TrackPoint.activity_id
-                WHERE Activity.user_id = 112
-                AND Activity.transportation_mode = "walk"
-                AND YEAR(Activity.start_date_time) = 2008
-            ) AS distance_table
+            SELECT lat, lon
+            FROM TrackPoint
+            WHERE activity_id
+            IN (
+                SELECT id FROM Activity
+                WHERE user_id = 112 
+                AND transportation_mode = 'walk' 
+                AND YEAR(start_date_time) = 2008
+            )
         """
-        res = self.execute_query(query)
-        print(
-            "The total distance walked in 2008 by user 112 is {} km".format(res[0][0]))
+
+        coordinates = self.execute_query(query)
+        total_distance = 0
+        for index in range(len(coordinates)):
+            if index == len(coordinates)-1:
+                break
+
+            distance = haversine(coordinates[index], coordinates[index+1])
+            total_distance += distance
+            
+        print("The total distance walked in 2008 by user 112 is {} km".format(total_distance))
 
     # Query 8 - Find the top 20 users who have gained the most altitude meters.
     def top_20_users_gained_most_altitude_meters(self):
