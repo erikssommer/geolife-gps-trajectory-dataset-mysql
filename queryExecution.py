@@ -178,7 +178,7 @@ class QueryExecution:
         res = self.execute_query(query)
         print("user_id  invalid_activities")
         for row in res:
-            print("{}     {:>18}".format(row[0], row[1]))
+            print("{} {:>23}".format(row[0], row[1]))
 
     # Query 10 - Find the users who have tracked an activity in the Forbidden City of Beijing.
 
