@@ -11,7 +11,6 @@ def id_has_label(id):
     return id in labeled_ids_list
 
 
-
 def read_plot_file(path):
     with open(path) as f:
         colnames = ["lat", "long", "_0", "altitude", "_1", "date", "date_time"]
@@ -52,19 +51,19 @@ def openAllFiles():
 
             user_id = name
             users[user_id] = id_has_label(user_id)
-        
+
         for name in files:
             current_file_index += 1
             print("{} Preparing insert {:7.2f} % {:6,} / {:6,}".format(
-                    time.strftime("%H:%M:%S"),
-                    round(current_file_index / number_of_files * 100, 2),
-                    current_file_index,
-                    number_of_files
-                )
+                time.strftime("%H:%M:%S"),
+                round(current_file_index / number_of_files * 100, 2),
+                current_file_index,
+                number_of_files
+            )
             )
 
             file_path = os.path.join(root, name)
-                
+
             if os.name == 'nt':
                 user_id = root.split("\\")[1]
             else:
@@ -75,12 +74,15 @@ def openAllFiles():
                 df = read_labels_file(file_path)
 
                 for _, row in df.iterrows():
-                    stripped_start_date = row["start_date_time"].split(" ")[0].replace("/", "")
-                    stripped_start_time = row["start_date_time"].split(" ")[1].replace(":", "")
-                    
+                    stripped_start_date = row["start_date_time"].split(" ")[
+                        0].replace("/", "")
+                    stripped_start_time = row["start_date_time"].split(" ")[
+                        1].replace(":", "")
+
                     activity_id = user_id + "_" + stripped_start_date + stripped_start_time
-                    
-                    formatted_start_date = row["start_date_time"].replace("/", "-")
+
+                    formatted_start_date = row["start_date_time"].replace(
+                        "/", "-")
                     formatted_end_date = row["end_date_time"].replace("/", "-")
 
                     activities[activity_id] = {
@@ -98,8 +100,10 @@ def openAllFiles():
 
                 # if the activity does not exist we need to create it
                 if not activity_id in activities and not df.empty:
-                    start_date_time = df.iloc[0]["date"] + " " + df.iloc[0]["date_time"]
-                    end_date_time = df.iloc[-1]["date"] + " " + df.iloc[-1]["date_time"]
+                    start_date_time = df.iloc[0]["date"] + \
+                        " " + df.iloc[0]["date_time"]
+                    end_date_time = df.iloc[-1]["date"] + \
+                        " " + df.iloc[-1]["date_time"]
 
                     activities[activity_id] = {
                         "user_id": user_id,
@@ -107,7 +111,7 @@ def openAllFiles():
                         "start_date_time": start_date_time,
                         "end_date_time": end_date_time
                     }
-                
+
                 for _, row in df.iterrows():
                     stripped_start_date = row["date"].replace("/", "")
                     stripped_start_time = row["date_time"].replace(":", "")
@@ -129,12 +133,14 @@ def openAllFiles():
 
     # insert data into database
     print(f"\n{time.strftime('%H:%M:%S')} inserting {cursor.rowcount} users...")
-    cursor.executemany("INSERT INTO User (id, has_labels) VALUES (%s, %s)", list(users.items()))
+    cursor.executemany(
+        "INSERT INTO User (id, has_labels) VALUES (%s, %s)", list(users.items()))
     db_connection.commit()
     print(f"\n{time.strftime('%H:%M:%S')} inserted {cursor.rowcount} users")
 
     print(f"\n{time.strftime('%H:%M:%S')} inserting {cursor.rowcount} activities...")
-    cursor.executemany("INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activities_list)
+    cursor.executemany(
+        "INSERT INTO Activity (id, user_id, transportation_mode, start_date_time, end_date_time) VALUES (%s, %s, %s, %s, %s)", activities_list)
     db_connection.commit()
     print(f"\n{time.strftime('%H:%M:%S')} inserted {cursor.rowcount} activities")
 
@@ -143,29 +149,35 @@ def openAllFiles():
     for i in range(0, int(len(trackpoints_list) / increment)):
         counter += increment
         print("{} Inserting trackpoints {:7.2f} % {:9,} / {:9,}".format(
-                time.strftime("%H:%M:%S"),
-                round(i / (len(trackpoints_list) / increment) * 100, 2),
-                counter,
-                len(trackpoints_list)
-            )
+            time.strftime("%H:%M:%S"),
+            round(i / (len(trackpoints_list) / increment) * 100, 2),
+            counter,
+            len(trackpoints_list)
         )
-        trackpoints_string = str(trackpoints_list[counter:counter + increment]).strip("[]") + ";"
-        cursor.execute(f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
+        )
+        trackpoints_string = str(
+            trackpoints_list[counter:counter + increment]).strip("[]") + ";"
+        cursor.execute(
+            f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
         db_connection.commit()
 
     # we need to insert the rest of the trackpoints if the number of trackpoints is not divisible by 1000
     print("{} Inserting trackpoints {:7.2f} % {:9,} / {:9,}".format(
-            time.strftime("%H:%M:%S"),
-            100.00,
-            len(trackpoints_list),
-            len(trackpoints_list)
-        )
+        time.strftime("%H:%M:%S"),
+        100.00,
+        len(trackpoints_list),
+        len(trackpoints_list)
     )
-    trackpoints_string = str(trackpoints_list[:len(trackpoints_list) % increment]).strip("[]")
-    cursor.execute(f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
+    )
+    trackpoints_string = str(trackpoints_list[:len(
+        trackpoints_list) % increment]).strip("[]")
+    cursor.execute(
+        f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
     db_connection.commit()
 
-    print(f"\n{time.strftime('%H:%M:%S')} inserted {len(trackpoints_list)} trackpoints")
+    print(
+        f"\n{time.strftime('%H:%M:%S')} inserted {len(trackpoints_list)} trackpoints")
+
 
 start_datetime = time.strftime("%H:%M:%S")
 openAllFiles()
