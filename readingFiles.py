@@ -120,9 +120,6 @@ def openAllFiles():
                         "date_time": row["date"] + " " + row["date_time"]
                     }
 
-    print("\nusers")
-    print(list(users.items())[:5])
-
     # prepare data for insertion, flatten the dictionaries into lists
     activities_list = [(k, *v.values()) for k, v in activities.items()]
     trackpoints_list = [(k, *v.values()) for k, v in trackpoints.items()]
@@ -141,19 +138,19 @@ def openAllFiles():
     increment = 1000
     for i in range(0, int(len(trackpoints_list) / increment)):
         counter += increment
-        print("{} Inserting trackpoints {:7.2f} % {:7,} / {:7,}".format(
+        print("{} Inserting trackpoints {:7.2f} % {:9,} / {:9,}".format(
                 time.strftime("%H:%M:%S"),
                 round(i / (len(trackpoints_list) / increment) * 100, 2),
-                i,
+                counter,
                 len(trackpoints_list)
             )
         )
-        trackpoints_string = str(trackpoints_list[i:i + increment]).strip("[]")
+        trackpoints_string = str(trackpoints_list[counter:counter + increment]).strip("[]") + ";"
         cursor.execute(f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
         db_connection.commit()
 
     # we need to insert the rest of the trackpoints if the number of trackpoints is not divisible by 1000
-    print("{} Inserting trackpoints {:7.2f} % {:7,} / {:7,}".format(
+    print("{} Inserting trackpoints {:7.2f} % {:9,} / {:9,}".format(
             time.strftime("%H:%M:%S"),
             100.00,
             len(trackpoints_list),
