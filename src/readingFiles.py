@@ -122,7 +122,7 @@ def openAllFiles():
                         "activity_id": activity_id,
                         "lat": row["lat"],
                         "lon": row["long"],
-                        "altitude": None if row["altitude"] == -777 else row["altitude"],
+                        "altitude": "" if row["altitude"] == -777 else row["altitude"],
                         "date_days": row["date"].replace("-", ""),
                         "date_time": row["date"] + " " + row["date_time"]
                     }
