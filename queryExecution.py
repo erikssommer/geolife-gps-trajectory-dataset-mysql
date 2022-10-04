@@ -1,5 +1,5 @@
-from itertools import count
 from DbConnector import DbConnector
+
 
 class QueryExecution:
     def __init__(self):
@@ -23,7 +23,8 @@ class QueryExecution:
         user_sum = res[0][0]
         activity_sum = res[0][1]
         trackpoint_sum = res[0][2]
-        print("There are {} users, {} activities and {} trackpoints in the dataset".format(user_sum, activity_sum, trackpoint_sum))
+        print("There are {} users, {} activities and {} trackpoints in the dataset".format(
+            user_sum, activity_sum, trackpoint_sum))
 
     # Query 2 - Find the average number of activities per user.
     def average_number_of_activities_per_user(self):
@@ -75,8 +76,9 @@ class QueryExecution:
         """
         res = self.execute_query(query)
         for row in res:
-            print("There are {} activities tagged with {}".format(row[1], row[0]))
-    
+            print("There are {} activities tagged with {}".format(
+                row[1], row[0]))
+
     # Query 6
     def year_with_most_activities(self):
         # Find the year with the most activities.
@@ -88,7 +90,8 @@ class QueryExecution:
         """
         res6a = self.execute_query(query6a)
         for row in res6a:
-            print("The year {} has the most activities with {} activities".format(row[0], row[1]))
+            print("The year {} has the most activities with {} activities".format(
+                row[0], row[1]))
 
         # Query 6b - Is this also the year with most recorded hours?
         query6b = """
@@ -99,16 +102,16 @@ class QueryExecution:
         """
         res6b = self.execute_query(query6b)
         for row in res6b:
-            print("The year {} has the most recorded hours with {} hours".format(row[0], row[1]))
-        
+            print("The year {} has the most recorded hours with {} hours".format(
+                row[0], row[1]))
+
         if res6b[0][0] == res6a[0][0]:
             print("Yes, this is also the year with most recorded hours!")
         else:
             print("No, this is not the year with most recorded hours")
-        
-        
 
     # Query 7 - Find the total distance (in km) walked in 2008, by user with id = 112
+
     def total_distance_in_km_walked_in_2008_by_userid_112(self):
         query = """
             SELECT SUM(distance) AS total_distance
@@ -125,7 +128,8 @@ class QueryExecution:
             ) AS distance_table
         """
         res = self.execute_query(query)
-        print("The total distance walked in 2008 by user 112 is {} km".format(res[0][0]))
+        print(
+            "The total distance walked in 2008 by user 112 is {} km".format(res[0][0]))
 
     # Query 8 - Find the top 20 users who have gained the most altitude meters.
     def top_20_users_gained_most_altitude_meters(self):
@@ -141,7 +145,8 @@ class QueryExecution:
         count = 0
         for row in res:
             count += 1
-            print("{}: User {} has gained {} meters".format(count, row[0], row[1]))
+            print("{}: User {} has gained {} meters".format(
+                count, row[0], row[1]))
 
     # Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
     def invalid_activities_per_user(self):
@@ -165,8 +170,8 @@ class QueryExecution:
         for row in res:
             print("User {} has {} invalid activities".format(row[0], row[1]))
 
-
     # Query 10 - Find the users who have tracked an activity in the Forbidden City of Beijing.
+
     def users_tracked_activity_in_the_forbidden_city_beijing(self):
         query = """
             SELECT user_id, COUNT(TrackPoint.id) as 'trackpoints in forbidden city'
@@ -178,10 +183,10 @@ class QueryExecution:
         """
         res = self.execute_query(query)
         for row in res:
-            print("User {} has {} trackpoints in the forbidden city".format(row[0], row[1]))
+            print("User {} has {} trackpoints in the forbidden city".format(
+                row[0], row[1]))
 
     # Query 11 - Find all users who have registered transportation_mode and their most used transportation_mode
-    # TODO ikke helt ferdig, mangler labels
     def users_registered_transportation_mode_and_their_most_used_transportation_mode(self):
         query = """
             SELECT user_id, transportation_mode, COUNT(Activity.id) as count
@@ -193,7 +198,7 @@ class QueryExecution:
         res = self.execute_query(query)
         if len(res) == 0:
             print("No users have registered transportation mode")
-        
+
         user_list = []
         current_user_id = res[0][0]
         current_user_transportation_mode = res[0][1]
@@ -208,29 +213,12 @@ class QueryExecution:
                     transportation_mode = row[1]
                     current_user_transportation_mode = transportation_mode
             else:
-                user_list.append((current_user_id, current_user_transportation_mode, current_user_count))
+                user_list.append(
+                    (current_user_id, current_user_transportation_mode, current_user_count))
                 current_user_id = row[0]
                 current_user_count = 0
-                current_user_transportation_mode = None
+                current_user_transportation_mode = row[1]
 
+        print("user_id transportation_mode count")
         for user in user_list:
-            print("User {} has registered transportation mode, and their most used transportation mode is {} and is registered {} times".format(user[0], user[1], user[2]))        
-
-    
-
-def main():
-    query = QueryExecution()
-    query.sum_user_activity_trackpoint()
-    query.average_number_of_activities_per_user()
-    query.top_twenty_users()
-    query.users_taken_taxi()
-    query.activity_transport_mode_count()
-    query.year_with_most_activities()
-    query.total_distance_in_km_walked_in_2008_by_userid_112()
-    query.top_20_users_gained_most_altitude_meters()
-    query.invalid_activities_per_user()
-    query.users_tracked_activity_in_the_forbidden_city_beijing()
-    query.users_registered_transportation_mode_and_their_most_used_transportation_mode()
-
-main()
-
+            print("{:7} {:18} {:6}".format(user[0], user[1], user[2]))
