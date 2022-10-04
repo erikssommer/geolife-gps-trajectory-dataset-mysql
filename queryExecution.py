@@ -10,9 +10,8 @@ class QueryExecution:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    # Query 1
-    def query1(self):
-        # How many users, activities and trackpoints are there in the dataset
+    # Query 1 - How many users, activities and trackpoints are there in the dataset?
+    def sum_user_activity_trackpoint(self):
         query = """
             SELECT 
             (SELECT COUNT(id) FROM User) AS user_sum,
@@ -20,10 +19,13 @@ class QueryExecution:
             (SELECT COUNT(id) FROM TrackPoint) AS trackpoint_sum
         """
         res = self.execute_query(query)
-        print(res)
+        user_sum = res[0][0]
+        activity_sum = res[0][1]
+        trackpoint_sum = res[0][2]
+        print("There are {} users, {} activities and {} trackpoints in the dataset".format(user_sum, activity_sum, trackpoint_sum))
 
-    # Query 2
-    def query2(self):
+    # Query 2 - Find the average number of activities per user.
+    def average_number_of_activities_per_user(self):
         query = """
             SELECT AVG(count) AS average_number_of_activities
             FROM (
@@ -33,38 +35,46 @@ class QueryExecution:
             ) AS user_activity_count
         """
         res = self.execute_query(query)
-        print(res)
+        average = res[0][0]
+        print("The average number of activities per user is {}".format(average))
 
-    # Query 3
+    # Query 3 - Find the top 20 users with the highest number of activities.
     def top_twenty_users(self):
         query = """
-        SELECT user_id, COUNT(*) AS num_activities 
-        FROM Activity
-        GROUP BY user_id
-        ORDER BY num_activities DESC
-        LIMIT 20
+            SELECT user_id, COUNT(*) AS num_activities 
+            FROM Activity
+            GROUP BY user_id
+            ORDER BY num_activities DESC
+            LIMIT 20
         """
         res = self.execute_query(query)
-        print(res[0])
 
-    # Query 4
+        for user in res:
+            print("User {} has {} activities".format(user[0], user[1]))
+
+    # Query 4 - Find all users who have taken a taxi.
     def users_taken_taxi(self):
         query = """
-        SELECT DISTINCT user_id
-        FROM Activity
-        WHERE transportation_mode = "taxi"
+            SELECT DISTINCT user_id
+            FROM Activity
+            WHERE transportation_mode = "taxi"
         """
-        self.execute_query(query)
+        res = self.execute_query(query)
 
-    # Query 5
-    def query5(self):
+        for user in res:
+            print("User {} has taken a taxi".format(user[0]))
+
+    # Query 5 - Find all types of transportation modes and count how many activities that are tagged with these transportation mode labels. Do not count the rows where the mode is null.
+    def activity_transport_mode_count(self):
         query = """
             SELECT transportation_mode, COUNT(transportation_mode) as count
             FROM geolife.Activity
-            WHERE transportation_mode!=""
+            WHERE transportation_mode != ""
             GROUP BY transportation_mode
         """
-        self.execute_query(query)
+        res = self.execute_query(query)
+        for row in res:
+            print("There are {} activities tagged with {}".format(row[1], row[0]))
     
     # Query 6
     def query6a(self):
@@ -164,10 +174,11 @@ class QueryExecution:
 
 def main():
     query = QueryExecution()
-    query.query1()
-    query.query2()
+    query.sum_user_activity_trackpoint()
+    query.average_number_of_activities_per_user()
     query.top_twenty_users()
-    query.total_distance_in_km_walked_in_2008_by_userid_112()
+    query.users_taken_taxi()
+    query.activity_transport_mode_count()
 
 main()
 
