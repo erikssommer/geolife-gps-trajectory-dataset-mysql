@@ -1,6 +1,21 @@
+import argparse
+import time
+from datetime import datetime
+from insertData import insert_data
 from queryExecution import QueryExecution
 
-def main():
+def init_db():
+    FMT = '%H:%M:%S'
+    start_datetime = time.strftime(FMT)
+    insert_data()
+    end_datetime = time.strftime(FMT)
+    total_datetime = datetime.strptime(end_datetime, FMT) - datetime.strptime(start_datetime, FMT)
+    print(f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal: {total_datetime}")
+
+def main(should_init_db = False):
+    if should_init_db:
+        init_db()
+
     query = QueryExecution()
     print("\n-------- Query 1 ----------")
     query.sum_user_activity_trackpoint()
@@ -26,7 +41,14 @@ def main():
     query.users_tracked_activity_in_the_forbidden_city_beijing()
     print("\n-------- Query 11 ----------")
     query.users_registered_transportation_mode_and_their_most_used_transportation_mode()
-
+    
+    # Close the connection after all queries are executed
+    query.connection.close_connection()
 
 if __name__ == "__main__":
-    main()
+    # Enables flag to initialize database
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--init_database", action="store_true", help="Initialize the database")
+    args = parser.parse_args()
+    
+    main(args.init_database)
