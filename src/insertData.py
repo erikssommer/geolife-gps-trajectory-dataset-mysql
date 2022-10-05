@@ -66,9 +66,9 @@ def open_all_files():
             file_path = os.path.join(root, name)
 
             if os.name == 'nt':
-                user_id = root.split("\\")[1]
+                user_id = root.split("\\")[2]
             else:
-                user_id = root.split("/")[2]
+                user_id = root.split("/")[3]
 
             # if we are reading labels file
             if name == "labels.txt":
