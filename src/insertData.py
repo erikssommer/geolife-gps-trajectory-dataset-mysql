@@ -6,7 +6,7 @@ from DbConnector import DbConnector
 
 
 def id_has_label(id):
-    file = open("dataset/labeled_ids.txt", "r")
+    file = open("../dataset/labeled_ids.txt", "r")
     labeled_ids_list = file.read().split()
     return id in labeled_ids_list
 
@@ -31,7 +31,7 @@ def read_labels_file(path):
         return df
 
 
-def openAllFiles():
+def open_all_files():
     connection = DbConnector()
     db_connection = connection.db_connection
     cursor = connection.cursor
@@ -44,7 +44,7 @@ def openAllFiles():
 
     current_file_index = 0
 
-    for root, dirs, files in os.walk("dataset/Data"):
+    for root, dirs, files in os.walk("../dataset/Data"):
         for name in dirs:
             if name == "Trajectory":
                 continue
@@ -180,6 +180,7 @@ def openAllFiles():
 
 
 start_datetime = time.strftime("%H:%M:%S")
-openAllFiles()
+open_all_files()
 end_datetime = time.strftime("%H:%M:%S")
-print(f"Started: {start_datetime}\nFinished: {end_datetime}")
+total_time = end_datetime - start_datetime
+print(f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal time: {total_time}")
