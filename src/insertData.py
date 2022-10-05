@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import time
+from datetime import datetime
 
 from DbConnector import DbConnector
 
@@ -179,8 +180,9 @@ def open_all_files():
         f"\n{time.strftime('%H:%M:%S')} inserted {len(trackpoints_list)} trackpoints")
 
 
-start_datetime = time.strftime("%H:%M:%S")
+FMT = '%H:%M:%S'
+start_datetime = time.strftime(FMT)
 open_all_files()
-end_datetime = time.strftime("%H:%M:%S")
-total_time = end_datetime - start_datetime
-print(f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal time: {total_time}")
+end_datetime = time.strftime(FMT)
+total_datetime = datetime.strptime(end_datetime, FMT) - datetime.strptime(start_datetime, FMT)
+print(f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal: {total_datetime}")
