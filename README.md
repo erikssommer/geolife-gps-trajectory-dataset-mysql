@@ -16,12 +16,12 @@ In seperate shell
 
 Init database with data and run queries
 ```bash
-python3 readingFiles.py -i
+python3 main.py -i
 ```
 
 Run only queries, requires database to be initialized
 ```bash
-python3 readingFiles.py
+python3 main.py
 ```
 
 If running docker-compose build command multiple times remember to prune volumes

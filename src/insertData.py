@@ -66,4 +66,4 @@ def insert_data():
     # Close database connection after all data is inserted
     connection.close_connection()
 
-    print("\nInserted {:,}} trackpoints".format(len(trackpoints_list)))
+    print("\nInserted {:,} trackpoints".format(len(trackpoints_list)))
