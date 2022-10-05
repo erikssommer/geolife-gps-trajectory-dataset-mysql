@@ -184,9 +184,11 @@ class QueryExecution:
             altitude_diff = next_altitude - altitude
             user_altitude[user_id] += altitude_diff
 
-        print("user_id altitude")
-        for user_id, altitude in user_altitude.items():
-            print("{} {:>12}".format(user_id, altitude))
+        user_altitude_array = sorted(user_altitude.items(), key=lambda x: x[1], reverse=True)
+
+        print("nr. user_id altitude")
+        for i, (user_id, altitude) in enumerate(user_altitude_array[:20]):
+            print("{:3} {:>7} {:>8}".format(i + 1, user_id, altitude))
 
     # Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
     def invalid_activities_per_user(self):
