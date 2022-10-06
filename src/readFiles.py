@@ -58,7 +58,7 @@ def open_all_files():
             file_path = os.path.join(root, name)
 
             if os.name == 'nt':
-                user_id = root.split("\\")[2]
+                user_id = root.split("\\")[1]
             else:
                 user_id = root.split("/")[3]
 
