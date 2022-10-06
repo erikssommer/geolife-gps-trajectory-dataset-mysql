@@ -4,6 +4,10 @@ from readFiles import open_all_files
 
 
 def clear_db(cursor):
+    """
+    Clears all data from the database
+    """
+
     print(
         f"\n{time.strftime('%H:%M:%S')} Clearing existing trackpoints from database...")
     cursor.execute("DELETE FROM TrackPoint")
@@ -17,12 +21,18 @@ def clear_db(cursor):
 
 
 def insert_data():
+    """
+    Insert data into the database
+    """
+    
     connection = DbConnector()
     db_connection = connection.db_connection
     cursor = connection.cursor
 
+    # Starts with clearing the database
     clear_db(cursor)
 
+    # Opens all files and returns a dictionary with all the data
     users, activities_list, trackpoints_list = open_all_files()
 
     # insert data into database
@@ -38,6 +48,7 @@ def insert_data():
     db_connection.commit()
     print(f"\n{time.strftime('%H:%M:%S')} inserted {len(activities_list)} activities")
 
+    # Iterates through all trackpoints and inserts them into the database in batches of 1000
     counter = 0
     increment = 1000
     for i in range(0, int(len(trackpoints_list) / increment)):
@@ -67,6 +78,7 @@ def insert_data():
     cursor.execute(
         f"INSERT IGNORE INTO TrackPoint (id, activity_id, lat, lon, altitude, date_days, date_time) VALUES {trackpoints_string}")
     db_connection.commit()
+
     # Close database connection after all data is inserted
     connection.close_connection()
 
