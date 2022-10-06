@@ -185,9 +185,10 @@ class QueryExecution:
 
         # Calculating the altitude gained for each user
         for index in range(len(trackpoint_altitudes)):
-            # If the user is not in the dictionary, add it
+            # Breaking if the last trackpoint is reached
             if index == len(trackpoint_altitudes) - 1:
                 break
+
             user_id = trackpoint_altitudes[index][0]
             activity_id = trackpoint_altitudes[index][1]
 
@@ -211,6 +212,7 @@ class QueryExecution:
             altitude_diff = next_altitude - altitude
             user_altitude[user_id] += altitude_diff
 
+        # Sorting the dict by the altitude gained
         user_altitude_array = sorted(
             user_altitude.items(), key=lambda x: x[1], reverse=True)
 
