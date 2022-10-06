@@ -71,7 +71,7 @@ def open_all_files():
             # Correcting the path given operating system
             if os.name == 'nt':
                 # Windows
-                user_id = root.split("\\")[2]
+                user_id = root.split("\\")[1]
             else:
                 # Linux
                 user_id = root.split("/")[3]
