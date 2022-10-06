@@ -28,7 +28,6 @@ class DbConnector:
 
         # Get the db cursor
         self.cursor = self.db_connection.cursor()
-
         print("Connected to:", self.db_connection.get_server_info())
         # get database information
         self.cursor.execute("select database();")

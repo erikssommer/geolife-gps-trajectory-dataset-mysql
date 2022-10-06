@@ -9,7 +9,7 @@ def clear_db(cursor):
     print(f"\n{time.strftime('%H:%M:%S')} Clearing existing activities from database...")
     cursor.execute("DELETE FROM Activity")
 
-    print(f"\n{time.strftime('%H:%M:%S')} Clearing existing users from database...")
+    print(f"\n{time.strftime('%H:%M:%S')} Clearing existing users from database...\n")
     cursor.execute("DELETE FROM User")
 
 def insert_data():
