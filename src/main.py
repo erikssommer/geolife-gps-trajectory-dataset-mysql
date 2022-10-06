@@ -4,6 +4,7 @@ from datetime import datetime
 from insertData import insert_data
 from queryExecution import QueryExecution
 
+
 def init_db():
     """
     Initialize the database
@@ -14,10 +15,13 @@ def init_db():
     insert_data()
     end_datetime = time.strftime(FMT)
     # Calculate the time difference
-    total_datetime = datetime.strptime(end_datetime, FMT) - datetime.strptime(start_datetime, FMT)
-    print(f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal: {total_datetime}")
+    total_datetime = datetime.strptime(
+        end_datetime, FMT) - datetime.strptime(start_datetime, FMT)
+    print(
+        f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal: {total_datetime}")
 
-def main(should_init_db = False):
+
+def main(should_init_db=False):
     if should_init_db:
         init_db()
 
@@ -53,17 +57,19 @@ def main(should_init_db = False):
 
     print("\n-------- Query 10 ----------")
     query.users_tracked_activity_in_the_forbidden_city_beijing()
-    
+
     print("\n-------- Query 11 ----------")
     query.users_registered_transportation_mode_and_their_most_used_transportation_mode()
-    
+
     # Close the connection after all queries are executed
     query.connection.close_connection()
+
 
 if __name__ == "__main__":
     # Enables flag to initialize database
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--init_database", action="store_true", help="Initialize the database")
+    parser.add_argument("-i", "--init_database",
+                        action="store_true", help="Initialize the database")
     args = parser.parse_args()
-    
+
     main(args.init_database)

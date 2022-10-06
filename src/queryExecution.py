@@ -3,6 +3,7 @@ from turtle import distance
 from DbConnector import DbConnector
 from haversine import haversine
 
+
 class QueryExecution:
     def __init__(self):
         self.connection = DbConnector()
@@ -62,7 +63,6 @@ class QueryExecution:
         """
         res = self.execute_query(query)
 
-        
         print("nr. user_id activities\n")
         for i, user in enumerate(res):
             print("{:2} {:>8} {:>10}".format(i + 1, user[0], user[1]))
@@ -163,7 +163,7 @@ class QueryExecution:
                 break
             # Calculating distance between two points using haversine formula
             distance += haversine(res[i], res[i+1])
-            
+
         print("The total distance walked in 2008 by user 112 is {:.2f} km".format(distance))
 
     def top_20_users_gained_most_altitude_meters(self):
@@ -182,7 +182,7 @@ class QueryExecution:
 
         trackpoint_altitudes = self.execute_query(query)
         user_altitude = dict()
-        
+
         # Calculating the altitude gained for each user
         for index in range(len(trackpoint_altitudes)):
             # If the user is not in the dictionary, add it
@@ -203,15 +203,16 @@ class QueryExecution:
 
             altitude = trackpoint_altitudes[index][2]
             next_altitude = trackpoint_altitudes[index + 1][2]
-        
+
             # If one of the altitudes are null they were -777 before cleanup and are invalid
             if not altitude or not next_altitude:
                 continue
-                
+
             altitude_diff = next_altitude - altitude
             user_altitude[user_id] += altitude_diff
 
-        user_altitude_array = sorted(user_altitude.items(), key=lambda x: x[1], reverse=True)
+        user_altitude_array = sorted(
+            user_altitude.items(), key=lambda x: x[1], reverse=True)
 
         print("nr. user_id altitude\n")
         for i, (user_id, altitude) in enumerate(user_altitude_array[:20]):
@@ -221,7 +222,7 @@ class QueryExecution:
         """
         Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
         """
-        
+
         query = """
             SELECT user_id, COUNT(DISTINCT activity_id) AS fault_activity_amount
             FROM(
@@ -268,7 +269,7 @@ class QueryExecution:
         """
         Query 11 - Find all users who have registered transportation_mode and their most used transportation_mode
         """
-        
+
         query = """
             WITH top_modes_per_user as (
                 SELECT user_id, transportation_mode, COUNT(Activity.id) as count

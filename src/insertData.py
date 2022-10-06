@@ -2,15 +2,19 @@ import time
 from DbConnector import DbConnector
 from readFiles import open_all_files
 
+
 def clear_db(cursor):
-    print(f"\n{time.strftime('%H:%M:%S')} Clearing existing trackpoints from database...")
+    print(
+        f"\n{time.strftime('%H:%M:%S')} Clearing existing trackpoints from database...")
     cursor.execute("DELETE FROM TrackPoint")
-    
-    print(f"\n{time.strftime('%H:%M:%S')} Clearing existing activities from database...")
+
+    print(
+        f"\n{time.strftime('%H:%M:%S')} Clearing existing activities from database...")
     cursor.execute("DELETE FROM Activity")
 
     print(f"\n{time.strftime('%H:%M:%S')} Clearing existing users from database...\n")
     cursor.execute("DELETE FROM User")
+
 
 def insert_data():
     connection = DbConnector()
@@ -20,7 +24,7 @@ def insert_data():
     clear_db(cursor)
 
     users, activities_list, trackpoints_list = open_all_files()
-    
+
     # insert data into database
     print(f"\n{time.strftime('%H:%M:%S')} inserting {len(users)} users...")
     cursor.executemany(
@@ -52,10 +56,10 @@ def insert_data():
 
     # We need to insert the rest of the trackpoints if the number of trackpoints is not divisible by 1000
     print("{} Inserting trackpoints {:7.2f} % {:9,} / {:9,}".format(
-            time.strftime("%H:%M:%S"),
-            100.00,
-            len(trackpoints_list),
-            len(trackpoints_list)
+        time.strftime("%H:%M:%S"),
+        100.00,
+        len(trackpoints_list),
+        len(trackpoints_list)
     )
     )
     trackpoints_string = str(trackpoints_list[:len(
