@@ -5,10 +5,15 @@ from insertData import insert_data
 from queryExecution import QueryExecution
 
 def init_db():
+    """
+    Initialize the database
+    """
+    # Format the current time
     FMT = '%H:%M:%S'
     start_datetime = time.strftime(FMT)
     insert_data()
     end_datetime = time.strftime(FMT)
+    # Calculate the time difference
     total_datetime = datetime.strptime(end_datetime, FMT) - datetime.strptime(start_datetime, FMT)
     print(f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal: {total_datetime}")
 

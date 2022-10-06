@@ -133,6 +133,7 @@ class QueryExecution:
         for row in res6b:
             print("{}  {:>6,}".format(row[0], row[1]).replace(",", " "))
 
+        # Testing if the year with most activities also is the year with most recorded hours
         if res6b[0][0] == res6a[0][0]:
             print("\nYes, this is also the year with most recorded hours!")
         else:
@@ -142,7 +143,7 @@ class QueryExecution:
         """ 
         Query 7 - Find the total distance (in km) walked in 2008, by user with id = 112
         """
-
+        # Finding longitude and latitude for each trackpoint matching the user_id, mode and year
         query = """
             SELECT lat, lon
             FROM TrackPoint
@@ -160,7 +161,7 @@ class QueryExecution:
         for i in range(len(res)):
             if i == len(res)-1:
                 break
-
+            # Calculating distance between two points using haversine formula
             distance += haversine(res[i], res[i+1])
             
         print("The total distance walked in 2008 by user 112 is {:.2f} km".format(distance))
@@ -182,7 +183,9 @@ class QueryExecution:
         trackpoint_altitudes = self.execute_query(query)
         user_altitude = dict()
         
+        # Calculating the altitude gained for each user
         for index in range(len(trackpoint_altitudes)):
+            # If the user is not in the dictionary, add it
             if index == len(trackpoint_altitudes) - 1:
                 break
             user_id = trackpoint_altitudes[index][0]
@@ -218,7 +221,7 @@ class QueryExecution:
         """
         Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
         """
-
+        
         query = """
             SELECT user_id, COUNT(DISTINCT activity_id) AS fault_activity_amount
             FROM(
