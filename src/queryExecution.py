@@ -225,6 +225,8 @@ class QueryExecution:
         Query 9 - Find all users who have invalid activities, and the number of invalid activities per user
         """
 
+        # Every trackpoint row is compared with the row behind it using LAG on data_time value
+        # This query takes therefor a long time to execute
         query = """
             SELECT user_id, COUNT(DISTINCT activity_id) AS fault_activity_amount
             FROM(
@@ -276,7 +278,7 @@ class QueryExecution:
             WITH top_modes_per_user as (
                 SELECT user_id, transportation_mode, COUNT(Activity.id) as count
                 FROM Activity
-                JOIN User ON Activity.user_id = `User`.id
+                JOIN User ON Activity.user_id = User.id
                 WHERE transportation_mode != ""
                 GROUP BY user_id, transportation_mode
             )
