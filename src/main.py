@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from insertData import insert_data
 from queryExecution import QueryExecution
+import os
 
 
 def init_db():
@@ -20,10 +21,21 @@ def init_db():
     print(
         f"Started: {start_datetime}\nFinished: {end_datetime}\nTotal: {total_datetime}")
 
+def dataset_is_present() -> bool:
+    if os.path.exists("../dataset"):
+        return True
+    else:
+        return False
+
 
 def main(should_init_db=False):
     if should_init_db:
-        init_db()
+        # Testing if dataset is in the correct folder
+        if dataset_is_present():
+            init_db()
+        else:
+            print("Dataset not found. Needs to be located in the root of the project folder, and be named 'dataset'")
+            return
 
     query = QueryExecution()
     print("\n-------- Query 1 ----------")
