@@ -274,6 +274,8 @@ class QueryExecution:
         Query 11 - Find all users who have registered transportation_mode and their most used transportation_mode
         """
 
+        # First pulls all users with all their transportation modes and their respective counts
+        # Then selects the top transportation mode for each user
         query = """
             WITH top_modes_per_user as (
                 SELECT user_id, transportation_mode, COUNT(Activity.id) as count
