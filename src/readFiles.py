@@ -2,26 +2,36 @@ import os
 import pandas as pd
 import time
 
+
 def id_has_label(id):
+    """
+    Checks if the user has a label
+    """
     file = open("../dataset/labeled_ids.txt", "r")
     labeled_ids_list = file.read().split()
     return id in labeled_ids_list
 
 
 def read_plot_file(path):
+
+    # Reads the file
     with open(path) as f:
         colnames = ["lat", "long", "_0", "altitude", "_1", "date", "date_time"]
+        # Cleans by skipping first 6 rows the data
         df = pd.read_csv(f, skiprows=6, names=colnames)
         df = df.drop(columns=['_0', '_1'])
 
+        # Dropping files containing more than 2500 rows
         if len(df.index) > 2500:
             # Empty dataframe
             return pd.DataFrame()
 
+        # returns a pandas dataframe
         return df
 
 
 def read_labels_file(path):
+    # Reads the labled file
     with open(path) as f:
         colnames = ["start_date_time", "end_date_time", "transportation_mode"]
         df = pd.read_csv(f, skiprows=1, names=colnames, sep="\t")
@@ -37,6 +47,7 @@ def open_all_files():
 
     current_file_index = 0
 
+    # Iterates through all files in the dataset
     for root, dirs, files in os.walk("../dataset/Data"):
         for name in dirs:
             if name == "Trajectory":
@@ -57,15 +68,19 @@ def open_all_files():
 
             file_path = os.path.join(root, name)
 
+            # Correcting the path given operating system
             if os.name == 'nt':
+                # Windows
                 user_id = root.split("\\")[1]
             else:
+                # Linux
                 user_id = root.split("/")[3]
 
             # if we are reading labels file
             if name == "labels.txt":
                 df = read_labels_file(file_path)
 
+                # Formatting
                 for _, row in df.iterrows():
                     stripped_start_date = row["start_date_time"].split(" ")[
                         0].replace("/", "")
@@ -78,6 +93,7 @@ def open_all_files():
                         "/", "-")
                     formatted_end_date = row["end_date_time"].replace("/", "-")
 
+                    # Giving activity table values
                     activities[activity_id] = {
                         "user_id": user_id,
                         "transportation_mode": row["transportation_mode"],
