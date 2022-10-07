@@ -47,8 +47,9 @@ def open_all_files():
 
     current_file_index = 0
 
-    # Iterates through all files in the dataset
+    # Iterates through all folders and files in the dataset/Data directory
     for root, dirs, files in os.walk("../dataset/Data"):
+        # iterates all folders to register the users
         for name in dirs:
             if name == "Trajectory":
                 continue
@@ -56,6 +57,7 @@ def open_all_files():
             user_id = name
             users[user_id] = id_has_label(user_id)
 
+        # iterates all files to register the activities and trackpoints
         for name in files:
             current_file_index += 1
             print("{} Preparing insert {:7.2f} % {:6,} / {:6,}".format(
@@ -66,6 +68,7 @@ def open_all_files():
             )
             )
 
+            # Creates the filepath
             file_path = os.path.join(root, name)
 
             # Correcting the path given operating system
@@ -73,14 +76,14 @@ def open_all_files():
                 # Windows
                 user_id = root.split("\\")[1]
             else:
-                # Linux
+                # macOS /Linux
                 user_id = root.split("/")[3]
 
             # if we are reading labels file
             if name == "labels.txt":
                 df = read_labels_file(file_path)
 
-                # Formatting
+                # iterates over all rows and adds the label to the activity
                 for _, row in df.iterrows():
                     stripped_start_date = row["start_date_time"].split(" ")[
                         0].replace("/", "")
@@ -108,6 +111,7 @@ def open_all_files():
                 df = read_plot_file(file_path)
 
                 # if the activity does not exist we need to create it
+                # it may have been created from the labels file
                 if not activity_id in activities and not df.empty:
                     start_date_time = df.iloc[0]["date"] + \
                         " " + df.iloc[0]["date_time"]
@@ -121,6 +125,7 @@ def open_all_files():
                         "end_date_time": end_date_time
                     }
 
+                # iterates all rows (trackpoints) in the dataframe/plot file
                 for _, row in df.iterrows():
                     stripped_start_date = row["date"].replace("/", "")
                     stripped_start_time = row["date_time"].replace(":", "")
