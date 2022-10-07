@@ -1,6 +1,11 @@
 # geolife-gps-trajectory-dataset-mysql
 ## TDT4225 - Very Large, Distributed Data Volumes
 
+### Dataset
+Modified dataset based on Geolife GPS Trajectory dataset
+
+> The dataset should be located in the root of the project folder and be named 'dataset'
+
 ### Setup
 ```bash
 pip3 install -r requirements.txt
